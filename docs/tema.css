@@ -1,0 +1,57 @@
+/* CSS For DSS Application
+
+2018 Copyright Hansrenee and other Members of DSS Group*/
+
+*{
+    margin:0;
+}
+
+html{
+    width: 100%;
+    height:100%;
+}
+
+p{
+    font-size: 30px;
+}
+.navbar{
+    background-color:lightsteelblue;
+}
+
+.bagian1{
+    display:flex;
+    flex-wrap: wrap;
+    width:100%;
+    height: 25%;
+    background-color: antiquewhite;
+
+}
+
+
+.right_container{
+    margin-left: 30%;
+    margin-top:10%;
+    width: 30%;
+    height: 100%;
+    font-size: 75px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+.left_container{
+    margin-left:10%;
+    margin-top:10%;
+    width: 30%;
+    height: 100%;
+    font-size: 75px;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.bagian2{
+    display:flex;
+    flex-wrap: wrap;
+    width:100%;
+    height: 25%;
+    background-color: sandybrown;
+
+
+}
+
