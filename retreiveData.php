@@ -4,7 +4,7 @@
     //2018 Hansrenee WIllysandro 
     //DSS specAI Universitas Multimedia Nusantara
 
-    //debugging for main purpose only
+    //for debugging purpose only
 
     require("kelasFungsi.php");
 
