@@ -4,14 +4,15 @@
     //2018 Hansrenee WIllysandro 
     //DSS specAI Universitas Multimedia Nusantara
 
-    //for debugging purpose only
+    //debugging for main purpose only
 
     require("kelasFungsi.php");
 
-    $library = new kelasFungsi("1jtdan1.5jt", 'gaje', 'ehhh');
+    $library = new kelasFungsi("asdfadsfads", 'ehh', '4-4,5');
 
     
-    $library->sortingHarga($library->ambilData());
+    //$library->sortingHarga($library->ambilData());
+    $library->sortingLayar($library->ambilData());
 
     // $file = file('gsmarena_dataset.csv');
 

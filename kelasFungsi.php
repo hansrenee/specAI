@@ -18,8 +18,8 @@
     //         [13] => weight_oz
     //         [14] => SIM
     //         [15] => display_type
-    //         [16] => display_resolution
-    //         [17] => display_size
+    //         [16] => display_resolution // inchi harusnya kebalik ama indeks 17
+    //         [17] => display_size // resolusi ini baru
     //         [18] => OS
     //         [19] => CPU
     //         [20] => Chipset
@@ -44,18 +44,17 @@
     //         [39] => img_url
     //         [40] => ---->kosong dari database csvnya
     // dataset diambil dari database GSM arena resmi tahun 2017
-    //2018 Hansrenee Willysandro 
+    // 2018 Hansrenee Willysandro 
     // DSS specAI Universitas Multimedia Nusantara
 
     class kelasFungsi{
 
         
+        //bangun parameter konstruktor
         public function __construct($budget_pilihan, $keperluan_pilihan, $layar_pilihan){
             $this->budget_pilihan = $budget_pilihan;
             $this->keperluan_pilihan = $keperluan_pilihan;
             $this->layar_pilihan = $layar_pilihan;
-            
-            
         }
 
         public function ambilData(){
@@ -71,10 +70,27 @@
 
         }
 
+        public function dataCleansing($data_tampung){
+
+            $bersih = explode(' ', $data_tampung);
+            return $bersih[0];
+
+        }
+
         public function tampungLoopData($harga1, $harga2, $tampungcsv){
             $arrTampung;
             for($i = 1;$i<count($tampungcsv);$i++){
                 if(($tampungcsv[$i][38] >= $harga1)   && ($tampungcsv[$i][38] <= $harga2)){
+                    $arrTampung[$i] = $tampungcsv[$i];
+                }
+            }
+            return $arrTampung;
+        }
+
+        public function tampungLoopLayar($inch1, $inch2, $tampungcsv){
+            $arrTampung;
+            for($i=0;$i<count($tampungcsv);$i++){
+                if(($this->dataCleansing(($tampungcsv[$i][16])) >= $inch1) && ($this->dataCleansing($tampungcsv[$i][16]) <=$inch2)){
                     $arrTampung[$i] = $tampungcsv[$i];
                 }
             }
@@ -95,7 +111,7 @@
             //fungsi buat orang kaya nyari hp diatas 10 jeti
             $arrTampung;
             for($i = 1;$i<count($tampungcsv);$i++){
-                if($tampungcsv[$i][38] > 10000000){
+                if($tampungcsv[$i][38] > $this->RupiahToDolar(10000000)){
                     $arrTampung[$i] = $tampungcsv[$i];
                 }
             }
@@ -104,32 +120,43 @@
 
         public function sortingHarga($data_tampung){
             if($this->budget_pilihan == '1jtdan1.5jt'){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(1000000), $this->RupiahToDolar(1500000), $data_tampung);
-                var_dump($tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(1000000), $this->RupiahToDolar(1500000), $data_tampung);
+                var_dump($tampung_sort);
                 
-            } else if($this->$this->budget_pilihan == "2jtdan2.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(2000000), $this->RupiahToDolar(2500000), $data_tampung);
+            } else if($this->budget_pilihan == "2jtdan2.5jt"){
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(2000000), $this->RupiahToDolar(2500000), $data_tampung);
             } else if($this->budget_pilihan == "3jtdan3.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(3000000), $this->RupiahToDolar(3500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(3000000), $this->RupiahToDolar(3500000), $data_tampung);
             } else if($this->budget_pilihan == "4jtdan4.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(4000000), $this->RupiahToDolar(4500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(4000000), $this->RupiahToDolar(4500000), $data_tampung);
             } else if($this->budget_pilihan=="5jtdan5.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(5000000), $this->RupiahToDolar(5500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(5000000), $this->RupiahToDolar(5500000), $data_tampung);
             } else if($this->budget_pilihan =="6jtdan6.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(6000000), $this->RupiahToDolar(6500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(6000000), $this->RupiahToDolar(6500000), $data_tampung);
             } else if($this->budget_pilihan =="7jtdan7.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(7000000), $this->RupiahToDolar(7500000), $data_tampung);
-            } else if($pulihan == "8jtdan8.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(8000000), $this->RupiahToDolar(8500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(7000000), $this->RupiahToDolar(7500000), $data_tampung);
+            } else if($this->budget_pilihan == "8jtdan8.5jt"){
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(8000000), $this->RupiahToDolar(8500000), $data_tampung);
             } else if($this->budget_pilihan == "9jtdan9.5jt"){
-                $tampung = $this->tampungLoopData($this->RupiahToDolar(9000000), $this->RupiahToDolar(1500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(9000000), $this->RupiahToDolar(1500000), $data_tampung);
             } else { //pilihan 10 juta keatas
-                $tampung = $this->richMan();
+                $tampung_sort = $this->richMan($data_tampung);
+                var_dump($tampung_sort);
             }
         }
 
-        public function sortingLayar(){
-
+        public function sortingLayar($data_tampung){
+            if($this->layar_pilihan == "4-4,5"){
+                $tampung_sort= $this->tampungLoopLayar(4, 4.5, $data_tampung);
+                echo "berhasil";
+                var_dump($tampung_sort);
+            } else if($this->layar_pilihan == "5-5,5"){
+                $tampung_sort= $this->tampungLoopLayar(5, 5.5, $data_tampung);
+            } else if($this->layar_pilihan == "6-6,5"){
+                $tampung_sort= $this->tampungLoopLayar(6, 6.5, $data_tampung);
+            } else{
+                $tampung_sort= $this->tampungLoopLayar(7, 10, $data_tampung);
+            }
         }
 
         public function kalkulasiAHP(){
@@ -137,18 +164,6 @@
         }
         
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ?>
