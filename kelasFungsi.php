@@ -18,8 +18,8 @@
     //         [13] => weight_oz
     //         [14] => SIM
     //         [15] => display_type
-    //         [16] => display_resolution // inchi harusnya kebalik ama indeks 17
-    //         [17] => display_size // resolusi ini baru
+    //         [16] => display_resolution // inchi, tapi harusnya kebalik ama indeks 17
+    //         [17] => display_size // resolusi, tapi harusnya kebalik ama indeks 16
     //         [18] => OS
     //         [19] => CPU
     //         [20] => Chipset
@@ -56,10 +56,10 @@
             $this->keperluan_pilihan = $keperluan_pilihan;
             $this->layar_pilihan = $layar_pilihan;
         }
-
+////////////////////////////PROSES PENGAMBILAN DATA////////////////////////////////////////////////////
         public function ambilData(){
-            $file = file('gsmarena_dataset.csv');
-
+            //$file = file('gsm_arena_example.csv');
+            $file = file("gsmarena_dataset.csv");
             foreach($file as $z){
                 $tampungcsv[]= explode(',', $z);
             }
@@ -70,31 +70,76 @@
 
         }
 
+        //buat clean layar
         public function dataCleansing($data_tampung){
 
             $bersih = explode(' ', $data_tampung);
-            return $bersih[0];
+            return intval($bersih[0]);
 
         }
 
-        public function tampungLoopData($harga1, $harga2, $tampungcsv){
+        public function dataCleansingBatre($data_tampung){
+            $bersih = explode(' ', $data_tampung);
+            if($bersih[2] == null){
+                return 0;
+            } else {
+                return intval($bersih[2]);
+            }
+        }
+
+        public function dataClenasingKamera($data_tampung){
+            $bersih = explode(' ', $data_tampung);
+            if($bersih[0] == null || $bersih[0]==""){
+                return 0;
+            } else {
+                return intval($bersih[0]);
+            }
+        }
+
+        public function dataCleansingMemory($data_tampung){
+            $bersih = explode(' ', $data_tampung);
+            if($bersih[0] == null || $bersih[0]==""){
+                return 0;
+            } else {
+                return intval($bersih[0]);
+            }
+        }
+///////////////////////////////////////////////////////////////////////////////////////////////////
+        public function tampungLoopHarga($harga1, $harga2, $tampungcsv){
             $arrTampung;
+
+            // for($i=0;$i<10;$i++){
+            //     $arrTampung[$i] = $tampungcsv[$i];
+            //     //echo var_dump($tampungcsv[$i])."<br><br>";
+            // }
+            
+            $indeksTampung =0;
             for($i = 1;$i<count($tampungcsv);$i++){
-                if(($tampungcsv[$i][38] >= $harga1)   && ($tampungcsv[$i][38] <= $harga2)){
-                    $arrTampung[$i] = $tampungcsv[$i];
+                if(($tampungcsv[$i][38] >= $harga1) && ($tampungcsv[$i][38] <= $harga2)){
+                    $arrTampung[$indeksTampung] = $tampungcsv[$i];
+                    $indeksTampung++;
                 }
             }
+            //  echo var_dump($arrTampung)."<br><br>";
             return $arrTampung;
         }
 
+        
         public function tampungLoopLayar($inch1, $inch2, $tampungcsv){
             $arrTampung;
+            $indeksTampung =0;
             for($i=0;$i<count($tampungcsv);$i++){
                 if(($this->dataCleansing(($tampungcsv[$i][16])) >= $inch1) && ($this->dataCleansing($tampungcsv[$i][16]) <=$inch2)){
-                    $arrTampung[$i] = $tampungcsv[$i];
+                    $arrTampung[$indeksTampung] = $tampungcsv[$i];
+                    $indeksTampung++;
                 }
             }
-            return $arrTampung;
+            if(!isset($arrTampung)){
+                return 0;
+            } else {
+                return $arrTampung;
+            }
+            
         }
 
         public function DolarToRupiah($harga){
@@ -120,46 +165,151 @@
 
         public function sortingHarga($data_tampung){
             if($this->budget_pilihan == '1jtdan1.5jt'){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(1000000), $this->RupiahToDolar(1500000), $data_tampung);
-                var_dump($tampung_sort);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(1000000), $this->RupiahToDolar(1500000), $data_tampung);
+                //var_dump($tampung_sort);
                 
             } else if($this->budget_pilihan == "2jtdan2.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(2000000), $this->RupiahToDolar(2500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(2000000), $this->RupiahToDolar(2500000), $data_tampung);
             } else if($this->budget_pilihan == "3jtdan3.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(3000000), $this->RupiahToDolar(3500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(3000000), $this->RupiahToDolar(3500000), $data_tampung);
             } else if($this->budget_pilihan == "4jtdan4.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(4000000), $this->RupiahToDolar(4500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(4000000), $this->RupiahToDolar(4500000), $data_tampung);
             } else if($this->budget_pilihan=="5jtdan5.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(5000000), $this->RupiahToDolar(5500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(5000000), $this->RupiahToDolar(5500000), $data_tampung);
             } else if($this->budget_pilihan =="6jtdan6.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(6000000), $this->RupiahToDolar(6500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(6000000), $this->RupiahToDolar(6500000), $data_tampung);
             } else if($this->budget_pilihan =="7jtdan7.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(7000000), $this->RupiahToDolar(7500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(7000000), $this->RupiahToDolar(7500000), $data_tampung);
             } else if($this->budget_pilihan == "8jtdan8.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(8000000), $this->RupiahToDolar(8500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(8000000), $this->RupiahToDolar(8500000), $data_tampung);
             } else if($this->budget_pilihan == "9jtdan9.5jt"){
-                $tampung_sort = $this->tampungLoopData($this->RupiahToDolar(9000000), $this->RupiahToDolar(1500000), $data_tampung);
+                $tampung_sort = $this->tampungLoopHarga($this->RupiahToDolar(9000000), $this->RupiahToDolar(1500000), $data_tampung);
             } else { //pilihan 10 juta keatas
                 $tampung_sort = $this->richMan($data_tampung);
-                var_dump($tampung_sort);
+                //var_dump($tampung_sort);
             }
+            return $tampung_sort;
         }
 
         public function sortingLayar($data_tampung){
             if($this->layar_pilihan == "4-4,5"){
                 $tampung_sort= $this->tampungLoopLayar(4, 4.5, $data_tampung);
-                echo "berhasil";
-                var_dump($tampung_sort);
+                //echo "berhasil";
+                //var_dump($tampung_sort);
             } else if($this->layar_pilihan == "5-5,5"){
                 $tampung_sort= $this->tampungLoopLayar(5, 5.5, $data_tampung);
+                //var_dump($tampung_sort);
             } else if($this->layar_pilihan == "6-6,5"){
                 $tampung_sort= $this->tampungLoopLayar(6, 6.5, $data_tampung);
+                //var_dump($tampung_sort);
             } else{
                 $tampung_sort= $this->tampungLoopLayar(7, 10, $data_tampung);
+                //var_dump($tampung_sort);
             }
+
+            return $tampung_sort;
         }
 
-        public function kalkulasiAHP(){
+        public function getKeperluan($value_keperluan){
+
+        }
+/////////////////Pengambilan Nilai beban dan tambah/////////////////////////////////////////
+        public function getMaxInternal($data_tampung){
+            $maxInternal;
+            for($i = 0;$i<count($data_tampung);$i++){
+                $maxInternal[$i] = $data_tampung[$i]["internal_memori"];
+            }
+
+            return $maxInternal;
+        }
+
+        public function getMaxLayar($data_tampung){
+            $maxLayar;
+            for($i = 0;$i<count($data_tampung);$i++){
+                $maxLayar[$i] = $data_tampung[$i]["layar"];
+            }
+
+            return $maxLayar;
+        }
+
+        public function getMaxBatre($data_tampung){
+            $max;
+            for($i = 0;$i<count($data_tampung);$i++){
+                $max[$i] = $data_tampung[$i]["batre"];
+            }
+
+            return $max;
+        }
+
+        public function getMaxKamera($data_tampung){
+            $max;
+            for($i = 0;$i<count($data_tampung);$i++){
+                $max[$i] = intval($data_tampung[$i]["kamera"]);
+            }
+
+            return $max;
+        }
+        public function getMinBerat($data_tampung){
+            $min;
+            $indeks_array = 0;
+            for($i = 0;$i<count($data_tampung);$i++){
+                if(intval($data_tampung[$i]["berat"])!=0){
+                    $min[$indeks_array] = intval($data_tampung[$i]["berat"]);
+                    $indeks_array++;
+                }
+                
+            }
+            return $min;
+        }
+
+        public function getMinHarga($data_tampung){
+            $min;
+            $indeks_array =0;
+            for($i = 0;$i<count($data_tampung);$i++){
+                if(intval($data_tampung[$i]["harga"])!=0){
+                    $min[$indeks_array] = intval($data_tampung[$i]["harga"]);
+                    $indeks_array++;
+                }
+            }
+            return $min;
+        }
+///////////////////////////////////////////////////////////////
+        public function kalkulasiSAW($data_sorted){
+            $hp;$hp_normalisasi1;$hp3;
+            if($this->keperluan_pilihan =="social_media"){
+                //buat matriks hp terhadap kriteria
+                for($i=0;$i<count($data_sorted);$i++){
+                    $hp[$i] = array(
+                        "nama" => $data_sorted[$i][0]." ".$data_sorted[$i][1],
+                        "internal_memori" => (int)$this->dataCleansingMemory($data_sorted[$i][23]),
+                        "layar" => $this->dataCleansing($data_sorted[$i][16]),
+                        "batre" => $this->dataCleansingBatre($data_sorted[$i][36]),
+                        "kamera" => $this->dataClenasingKamera($data_sorted[$i][25]),
+                        "berat" => $data_sorted[$i][12],
+                        "harga" => $data_sorted[$i][38]
+                    );
+                    //echo var_dump($hp);
+                }
+
+                $max_internal = max($this->getMaxInternal($hp));
+                $max_layar = max($this->getMaxLayar($hp));
+                $max_batre = max($this->getMaxBatre($hp));
+                $max_kamera = max($this->getMaxKamera($hp));
+                $min_berat = min($this->getMinBerat($hp));
+                $min_harga = min($this->getMinHarga($hp));
+
+                //echo var_dump($this->getMaxKamera($hp));
+                echo var_dump($min_harga);
+                for($z=0;z<count($hp);$z++){
+
+                }
+           
+                
+            } else if($this->keperluan_pilihan == "gaming"){
+
+            } else{
+
+            }
 
         }
         
