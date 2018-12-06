@@ -4,11 +4,12 @@
     //2018 Hansrenee WIllysandro 
     //DSS specAI Universitas Multimedia Nusantara
 
-    //debugging for main purpose only
-
+    //debugging for main purpose only:
+    //error_reporting(E_ERROR | E_PARSE);
+    /////////////////////////////
     require("kelasFungsi.php");
 
-    $library = new kelasFungsi("1jtdan1.5jt", 'social_media', '4-4,5');
+    $library = new kelasFungsi("1jtdan1.5jt", 'social_media', '6-6,5');
 
     
     $data = $library->ambilData();
