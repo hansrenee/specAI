@@ -42,24 +42,31 @@
     //         [37] => colors
     //         [38] => approx_price_EUR
     //         [39] => img_url
-    //         [40] => ---->kosong dari database csvnya
+    //         [40] => ---->kosong dari database csvnya (antutu untuk database mini)
     // dataset diambil dari database GSM arena resmi tahun 2017
     // 2018 Hansrenee Willysandro 
     // DSS specAI Universitas Multimedia Nusantara
 
     class kelasFungsi{
 
-        
         //bangun parameter konstruktor
         public function __construct($budget_pilihan, $keperluan_pilihan, $layar_pilihan){
             $this->budget_pilihan = $budget_pilihan;
             $this->keperluan_pilihan = $keperluan_pilihan;
             $this->layar_pilihan = $layar_pilihan;
         }
+
 ////////////////////////////PROSES PENGAMBILAN DATA////////////////////////////////////////////////////
         public function ambilData(){
-            //$file = file('gsm_arena_example.csv');
-            $file = file("gsmarena_dataset.csv");
+
+            $file;
+            if($this->keperluan_pilihan == "social_media"){
+                $file = file("gsmarena_dataset.csv");
+            } else{
+                $file = file('gsm_arena_example.csv');
+            }
+           
+            //$file = file("gsmarena_dataset.csv");
             foreach($file as $z){
                 $tampungcsv[]= explode(',', $z);
             }
@@ -87,6 +94,14 @@
             }
         }
 
+        public function dataCleansingRAM($data_tampung){
+            $bersih = explode(' ', $data_tampung);
+            if($bersih[0] == null){
+                return 0;
+            } else {
+                return intval($bersih[0]);
+            }
+        }
         public function dataClenasingKamera($data_tampung){
             $bersih = explode(' ', $data_tampung);
             if($bersih[0] == null || $bersih[0]==""){
@@ -288,9 +303,28 @@
             rsort($max);
             return  $max;
         }
+
+        public function getMaxAntutu($data_tampung){
+            $max;
+            for($i = 0;$i<count($data_tampung);$i++){
+                $max[$i] = intval($data_tampung[$i]["antutu"]);
+            }
+            return $max;
+        }
+
+        public function getMaxRAM($data_tampung){
+            $max;
+            for($i = 0;$i<count($data_tampung);$i++){
+                $max[$i] = intval($data_tampung[$i]["RAM"]);
+            }
+
+            return $max;
+        }
 ///////////////////////////////////////////////////////////////
         public function kalkulasiSAW($data_sorted){
+            session_start();
             $hp;
+            
             if($this->keperluan_pilihan =="social_media"){
                 
                 //buat matriks hp terhadap kriteria
@@ -385,18 +419,231 @@
 
                 
                 /////////////////////print hasil 3 hp terbaik //////////////////////////////////////
-                echo var_dump($indeks_spec_hp);     
+                $hpFinalResult;
                 for($i=0;$i<3;$i++){
-                    echo var_dump($hp_properties_sorted[$indeks_spec_hp[$i]]);
-                }           
+                    //echo var_dump($hp_properties_sorted[$indeks_spec_hp[$i]]);
+                    $hpFinalResult[$i] = $hp_properties_sorted[$indeks_spec_hp[$i]];
+                }                   
                
 
                 
             } else if($this->keperluan_pilihan == "gaming"){
 
+                //buat matriks hp terhadap kriteria
+                for($i=0;$i<count($data_sorted);$i++){
+                    $hp[$i] = array(
+                        "nama" => $data_sorted[$i][0]." ".$data_sorted[$i][1],
+                        "url_gambar" => $data_sorted[$i][39],
+                        "chipset" => $data_sorted[$i][20],
+                        ////////////////array kriteria///////////////////////////////////////
+                        "RAM" => $this->dataCleansingRAM($data_sorted[$i][24]),
+                        "internal_memori" => (int)$this->dataCleansingMemory($data_sorted[$i][23]),
+                        "layar" => $this->dataCleansing($data_sorted[$i][16]),
+                        "batre" => $this->dataCleansingBatre($data_sorted[$i][36]),
+                        "kamera" => $this->dataClenasingKamera($data_sorted[$i][25]),
+                        "berat" => $data_sorted[$i][12],
+                        "harga" => $data_sorted[$i][38],
+                        "antutu" => $data_sorted[$i][40]
+                        ////////////////////////////////////////////////////////////////////
+                    );
+                    //echo var_dump($hp);
+                }
+                
+                $hp_properties_sorted = $hp;
+                ////////ambil nilai pembagi minimum dan maksimum dari kriteria
+                $max_internal = max($this->getMaxInternal($hp));
+                $max_layar = max($this->getMaxLayar($hp));
+                $max_batre = max($this->getMaxBatre($hp));
+                $max_kamera = max($this->getMaxKamera($hp));
+                $max_antutu = max($this->getMaxAntutu($hp));
+                $max_ram = max($this->getMaxRAM($hp));
+
+                $min_berat = min($this->getMinBerat($hp));
+                $min_harga = min($this->getMinHarga($hp));
+
+
+                //echo var_dump($this->getMaxKamera($hp));
+                //echo var_dump($min_harga);
+                for($z=0;$z<count($hp);$z++){
+                    $hp[$z]['internal_memori'] = $hp[$z]['internal_memori']/$max_internal;
+                    $hp[$z]['RAM'] = $hp[$z]['RAM'] / $max_ram;
+                    $hp[$z]['layar'] = $hp[$z]['layar']/$max_layar;
+                    $hp[$z]['kamera'] = $hp[$z]['kamera']/$max_kamera;
+                    $hp[$z]['batre'] = $hp[$z]['batre']/$max_batre;
+                    $hp[$z]['antutu'] = $hp[$z]['antutu']/$max_antutu;
+                    $hp[$z]['berat'] = $min_berat/$hp[$z]['berat'];
+                    $hp[$z]['harga'] = $min_harga/$hp[$z]['harga'];
+                }
+
+                //echo var_dump($hp);
+
+                //perkalian bobot kriteria yang ditentukan untuk gaming
+                for($z=0;$z<count($hp);$z++){
+                    $hp[$z]['internal_memori'] = $hp[$z]['internal_memori'] * 0.15;
+                    //ram 25 persen
+                    $hp[$z]['RAM'] = $hp[$z]['RAM'] * 0.2;
+                    $hp[$z]['antutu'] = $hp[$z]['antutu']*0.2;
+                    $hp[$z]['layar'] = $hp[$z]['layar'] * 0.10;
+                    $hp[$z]['kamera'] = $hp[$z]['kamera'] * 0.05;
+                    $hp[$z]['batre'] = $hp[$z]['batre'] * 0.15;
+                    $hp[$z]['berat'] = $hp[$z]['berat'] * 0.05;
+                    $hp[$z]['harga'] = $hp[$z]['harga'] * 0.10;
+                }
+                //echo var_dump($hp);
+                
+
+                //Pertambahan dari hasil perkalian bobot kriteria
+                $ListHasil_pertambahanHP;
+
+                for($z=0;$z<count($hp);$z++){
+                    $ListHasil_pertambahanHP[$z] = array(
+                        "nama" => $hp[$z]['nama'],
+                        "hasil_bobot_akhir" => $hp[$z]["internal_memori"]+$hp[$z]["layar"] + 
+                        $hp[$z]["kamera"]+$hp[$z]["batre"] + $hp[$z]['antutu'] + $hp[$z]['RAM'] + 
+                        $hp[$z]["berat"]+ $hp[$z]["harga"]
+                    );
+                }           
+                //echo var_dump($ListHasil_pertambahanHP);
+
+                /////ambil 3 bobot hp terbesar 
+                $bobothp = $this->getThreeHP($ListHasil_pertambahanHP);
+                $bestHP = array($bobothp[0], $bobothp[1], $bobothp[2]);
+
+                /////looping buat nyari informasi dari 3 HP tersebut////
+                $indeks_spec_hp = array();
+                //$indeks = 0;
+                for($indeks = 0;$indeks<3;$indeks++){
+                    for($i =0; $i<count($ListHasil_pertambahanHP);$i++){
+
+                            if($ListHasil_pertambahanHP[$i]["hasil_bobot_akhir"] == $bestHP[$indeks]){
+                                $indeks_spec_hp[$indeks] = $i;
+                                if($indeks == 2){
+                                    break;
+                                }
+                                //$indeks++;
+                                
+                            }
+                        }
+                    }
+                
+                /////////////////////print hasil 3 hp terbaik //////////////////////////////////////
+                $hpFinalResult;
+                for($i=0;$i<3;$i++){
+                    //echo var_dump($hp_properties_sorted[$indeks_spec_hp[$i]]);
+                    $hpFinalResult[$i] = $hp_properties_sorted[$indeks_spec_hp[$i]];
+                }                 
+
             } else{
 
+                //buat matriks hp terhadap kriteria
+                for($i=0;$i<count($data_sorted);$i++){
+                    $hp[$i] = array(
+                        "nama" => $data_sorted[$i][0]." ".$data_sorted[$i][1],
+                        "url_gambar" => $data_sorted[$i][39],
+                        "chipset" => $data_sorted[$i][20],
+                        ////////////////array kriteria///////////////////////////////////////
+                        "RAM" => $this->dataCleansingRAM($data_sorted[$i][24]),
+                        "internal_memori" => (int)$this->dataCleansingMemory($data_sorted[$i][23]),
+                        "layar" => $this->dataCleansing($data_sorted[$i][16]),
+                        "batre" => $this->dataCleansingBatre($data_sorted[$i][36]),
+                        "kamera" => $this->dataClenasingKamera($data_sorted[$i][25]),
+                        "berat" => $data_sorted[$i][12],
+                        "harga" => $data_sorted[$i][38],
+                        "antutu" => $data_sorted[$i][40]
+                        ////////////////////////////////////////////////////////////////////
+                    );
+                    //echo var_dump($hp);
+                }
+                
+                $hp_properties_sorted = $hp;
+                ////////ambil nilai pembagi minimum dan maksimum dari kriteria
+                $max_internal = max($this->getMaxInternal($hp));
+                $max_layar = max($this->getMaxLayar($hp));
+                $max_batre = max($this->getMaxBatre($hp));
+                $max_kamera = max($this->getMaxKamera($hp));
+                $max_antutu = max($this->getMaxAntutu($hp));
+                $max_ram = max($this->getMaxRAM($hp));
+
+                $min_berat = min($this->getMinBerat($hp));
+                $min_harga = min($this->getMinHarga($hp));
+
+
+                //echo var_dump($this->getMaxKamera($hp));
+                //echo var_dump($min_harga);
+                for($z=0;$z<count($hp);$z++){
+                    $hp[$z]['internal_memori'] = $hp[$z]['internal_memori']/$max_internal;
+                    $hp[$z]['RAM'] = $hp[$z]['RAM'] / $max_ram;
+                    $hp[$z]['layar'] = $hp[$z]['layar']/$max_layar;
+                    $hp[$z]['kamera'] = $hp[$z]['kamera']/$max_kamera;
+                    $hp[$z]['batre'] = $hp[$z]['batre']/$max_batre;
+                    $hp[$z]['antutu'] = $hp[$z]['antutu']/$max_antutu;
+                    $hp[$z]['berat'] = $min_berat/$hp[$z]['berat'];
+                    $hp[$z]['harga'] = $min_harga/$hp[$z]['harga'];
+                }
+
+                //echo var_dump($hp);
+
+                //perkalian bobot kriteria yang ditentukan untuk gaming
+                for($z=0;$z<count($hp);$z++){
+                    $hp[$z]['internal_memori'] = $hp[$z]['internal_memori'] * 0.15;
+                    $hp[$z]['RAM'] = $hp[$z]['RAM'] * 0.2;
+                    $hp[$z]['antutu'] = $hp[$z]['antutu']*0.1;
+                    $hp[$z]['layar'] = $hp[$z]['layar'] * 0.15;
+                    $hp[$z]['kamera'] = $hp[$z]['kamera'] * 0.1;
+                    $hp[$z]['batre'] = $hp[$z]['batre'] * 0.15;
+                    $hp[$z]['berat'] = $hp[$z]['berat'] * 0.05;
+                    $hp[$z]['harga'] = $hp[$z]['harga'] * 0.10;
+                }
+                //echo var_dump($hp);
+                
+
+                //Pertambahan dari hasil perkalian bobot kriteria
+                $ListHasil_pertambahanHP;
+
+                for($z=0;$z<count($hp);$z++){
+                    $ListHasil_pertambahanHP[$z] = array(
+                        "nama" => $hp[$z]['nama'],
+                        "hasil_bobot_akhir" => $hp[$z]["internal_memori"]+$hp[$z]["layar"] + 
+                        $hp[$z]["kamera"]+$hp[$z]["batre"] + $hp[$z]['antutu'] + $hp[$z]['RAM'] + 
+                        $hp[$z]["berat"]+ $hp[$z]["harga"]
+                    );
+                }           
+                //echo var_dump($ListHasil_pertambahanHP);
+
+                /////ambil 3 bobot hp terbesar 
+                $bobothp = $this->getThreeHP($ListHasil_pertambahanHP);
+                $bestHP = array($bobothp[0], $bobothp[1], $bobothp[2]);
+
+                /////looping buat nyari informasi dari 3 HP tersebut////
+                $indeks_spec_hp = array();
+                //$indeks = 0;
+                for($indeks = 0;$indeks<3;$indeks++){
+                    for($i =0; $i<count($ListHasil_pertambahanHP);$i++){
+
+                            if($ListHasil_pertambahanHP[$i]["hasil_bobot_akhir"] == $bestHP[$indeks]){
+                                $indeks_spec_hp[$indeks] = $i;
+                                if($indeks == 2){
+                                    break;
+                                }
+                                //$indeks++;
+                                
+                            }
+                        }
+                    }
+                
+                /////////////////////print hasil 3 hp terbaik //////////////////////////////////////
+                //echo var_dump($indeks_spec_hp);
+                
+                $hpFinalResult;
+                for($i=0;$i<3;$i++){
+                    //echo var_dump($hp_properties_sorted[$indeks_spec_hp[$i]]);
+                    $hpFinalResult[$i] = $hp_properties_sorted[$indeks_spec_hp[$i]];
+                }          
+
             }
+            //echo var_dump($hpFinalResult);
+            $_SESSION['final_result'] = $hpFinalResult;
+            echo "<script>window.location.assign('hasil.php')</script>";
 
         }
         

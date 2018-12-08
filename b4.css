@@ -1,0 +1,15 @@
+.table{
+    border-radius: 5px;
+    width: 50%;
+    margin: 0px auto;
+    float: none;
+    margin-top: 100px;
+}
+h1{
+    text-align: center;
+    margin-top: 50px;
+}
+
+body{
+    background-color: #FFF9C4;
+}
